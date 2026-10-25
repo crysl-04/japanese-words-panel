@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>五十音学习面板 · いろどり日语</title>
+<style>
+:root{--blue:#3f87c9;--blue2:#2e6da4;--head:#eaf3fb;--line:#d5e3f0;--ok:#2fa06a;--bg:#eef2f7;--txt:#2b3a4a;--mut:#8ba0b5;--warn:#e8a13c}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Yu Gothic","Meiryo","微软雅黑",sans-serif;background:var(--bg);color:var(--txt)}
+header{position:sticky;top:0;z-index:20;background:#ffffffee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:10px 16px}
+.hrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1080px;margin:0 auto}
+h1{font-size:18px;color:var(--blue2)}
+.sub{font-size:12px;color:var(--mut)}
+main{max-width:1080px;margin:0 auto;padding:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.tab{padding:7px 16px;border-radius:20px;background:#fff;border:1px solid var(--line);font-size:14px;cursor:pointer;color:#4a6076}
+.tab.cur{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:700}
+.ctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#fff;border-radius:12px;padding:10px 12px;margin-bottom:14px;box-shadow:0 1px 3px rgba(40,60,90,.07)}
+.btn{padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:13px;cursor:pointer;color:#4a6076;white-space:nowrap}
+.btn.on{background:var(--head);border-color:var(--blue);color:var(--blue2);font-weight:700}
+select{padding:8px;border:1px solid var(--line);border-radius:8px;font-size:13px;color:#4a6076;background:#fff}
+.hint{font-size:12.5px;color:var(--mut);flex:1;min-width:200px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px}
+.card{background:#fff;border-radius:12px;padding:10px 8px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(40,60,90,.07);border:2px solid transparent;position:relative;user-select:none}
+.card:hover{border-color:var(--blue)}
+.card.dim{opacity:.28;pointer-events:none}
+.card.today{border-color:var(--warn)}
+.card .hir{font-size:34px;line-height:1.15;font-weight:700}
+.card .kat{font-size:19px;color:#5a7186;line-height:1.2}
+.card .rom{font-size:12.5px;color:var(--blue2);font-weight:700}
+.card .src{font-size:11px;color:var(--mut);margin-top:3px}
+.card .src b{color:#7a6238;font-weight:700}
+.card .src .arw{color:#c3d3e3;margin:0 2px}
+.dot{position:absolute;top:6px;right:8px;width:9px;height:9px;border-radius:50%;background:#dfe7ee}
+.dot.s1{background:#f0c56a}.dot.s2{background:#2fa06a}
+.playing{background:var(--head)!important;border-color:var(--blue)!important}
+#quiz{display:none;background:#fff;border-radius:14px;padding:26px 20px;text-align:center;box-shadow:0 1px 4px rgba(40,60,90,.09)}
+#quiz .qs{font-size:15px;color:var(--mut)}
+#quiz .big{font-size:52px;font-weight:800;color:var(--blue2);margin:8px 0 4px}
+#quiz .opts{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+#quiz .opt{width:96px;padding:12px 0;font-size:30px;font-weight:700;background:#f6f9fc;border:2px solid var(--line);border-radius:12px;cursor:pointer}
+#quiz .opt:hover{border-color:var(--blue)}
+#quiz .opt.right{border-color:var(--ok);background:#e9f7ef}
+#quiz .opt.wrong{border-color:#d76b62;background:#fbecea}
+#quiz .meta{margin-top:14px;font-size:13px;color:var(--mut)}
+#quiz .meta b{color:var(--blue2)}
+.note{background:#fff;border-radius:12px;padding:12px 16px;margin-top:14px;font-size:13px;color:#5a7186;line-height:1.8;box-shadow:0 1px 3px rgba(40,60,90,.07)}
+.note b{color:var(--blue2)}
+footer{text-align:center;color:#a5b6c6;font-size:12px;padding:12px 0 30px}
+@media print{header,.ctl,.tabs,#quiz,footer,.note{display:none}.grid{grid-template-columns:repeat(5,1fr)}.card{box-shadow:none;border:1px solid var(--line);page-break-inside:avoid}.card.dim{opacity:1}}
+</style>
+</head>
+<body>
+<header><div class="hrow">
+<h1>五十音学习面板</h1>
+<span class="sub">点假名听发音 · 汉字源流记忆 · 配合《いろどり》官方音频</span>
+</div></header>
+<main>
+<div class="tabs">
+<div class="tab cur" data-t="gojuon">清音 46</div>
+<div class="tab" data-t="dakuon">浊音 · 半浊音 25</div>
+<div class="tab" data-t="yoon">拗音 33</div>
+<div class="tab" data-t="special">促音 · 长音 · 外来语特殊音</div>
+</div>
+<div class="ctl">
+<select id="day"><option value="0">—— 7 天学习日程（高亮今天的假名）——</option></select>
+<button class="btn" id="quizb">🎯 测验模式</button>
+<button class="btn" id="reset">↺ 清空测验记录</button>
+<span class="hint" id="hint"></span>
+</div>
+<div id="quiz"></div>
+<div id="grid" class="grid"></div>
+<div class="note" id="note"></div>
+<footer>いろどり日语 · 五十音 · 平假名源自汉字草书 · 片假名源自楷书偏旁</footer>
+</main>
+<script type="application/json" id="wd">{"gojuon":[["あ","ア","a","安","阿",1],["い","イ","i","以","伊",1],["う","ウ","u","宇","宇",1],["え","エ","e","衣","江",1],["お","オ","o","遠","於",1],["か","カ","ka","加","加",1],["き","キ","ki","幾","幾",1],["く","ク","ku","久","久",1],["け","ケ","ke","計","介",1],["こ","コ","ko","己","己",1],["さ","サ","sa","左","散",2],["し","シ","shi","之","之",2],["す","ス","su","寸","須",2],["せ","セ","se","世","世",2],["そ","ソ","so","曽","曽",2],["た","タ","ta","太","多",2],["ち","チ","chi","知","千",2],["つ","ツ","tsu","川","川",2],["て","テ","te","天","天",2],["と","ト","to","止","止",2],["な","ナ","na","奈","奈",3],["に","ニ","ni","仁","二",3],["ぬ","ヌ","nu","奴","奴",3],["ね","ネ","ne","祢","祢",3],["の","ノ","no","乃","乃",3],["は","ハ","ha","波","八",3],["ひ","ヒ","hi","比","比",3],["ふ","フ","fu","不","不",3],["へ","ヘ","he","部","部",3],["ほ","ホ","ho","保","保",3],["ま","マ","ma","末","末",4],["み","ミ","mi","美","三",4],["む","ム","mu","武","牟",4],["め","メ","me","女","女",4],["も","モ","mo","毛","毛",4],["や","ヤ","ya","也","也",4],["ゆ","ユ","yu","由","由",4],["よ","ヨ","yo","与","与",4],["ら","ラ","ra","良","良",4],["り","リ","ri","利","利",4],["る","ル","ru","留","留",4],["れ","レ","re","礼","礼",4],["ろ","ロ","ro","呂","呂",4],["わ","ワ","wa","和","和",4],["を","ヲ","wo","遠","遠",4],["ん","ン","n","无","尔",4]],"dakuon":[["が","ガ","ga"],["ぎ","ギ","gi"],["ぐ","グ","gu"],["げ","ゲ","ge"],["ご","ゴ","go"],["ざ","ザ","za"],["じ","ジ","ji"],["ず","ズ","zu"],["ぜ","ゼ","ze"],["ぞ","ゾ","zo"],["だ","ダ","da"],["ぢ","ヂ","ji"],["づ","ヅ","zu"],["で","デ","de"],["ど","ド","do"],["ば","バ","ba"],["び","ビ","bi"],["ぶ","ブ","bu"],["べ","ベ","be"],["ぼ","ボ","bo"],["ぱ","パ","pa"],["ぴ","ピ","pi"],["ぷ","プ","pu"],["ぺ","ペ","pe"],["ぽ","ポ","po"]],"yoon":[["きゃ","キャ","kya"],["きゅ","キュ","kyu"],["きょ","キョ","kyo"],["しゃ","シャ","sha"],["しゅ","シュ","shu"],["しょ","ショ","sho"],["ちゃ","チャ","cha"],["ちゅ","チュ","chu"],["ちょ","チョ","cho"],["にゃ","ニャ","nya"],["にゅ","ニュ","nyu"],["にょ","ニョ","nyo"],["ひゃ","ヒャ","hya"],["ひゅ","ヒュ","hyu"],["ひょ","ヒョ","hyo"],["みゃ","ミャ","mya"],["みゅ","ミュ","myu"],["みょ","ミョ","myo"],["りゃ","リャ","rya"],["りゅ","リュ","ryu"],["りょ","リョ","ryo"],["ぎゃ","ギャ","gya"],["ぎゅ","ギュ","gyu"],["ぎょ","ギョ","gyo"],["じゃ","ジャ","ja"],["じゅ","ジュ","ju"],["じょ","ジョ","jo"],["びゃ","ビャ","bya"],["びゅ","ビュ","byu"],["びょ","ビョ","byo"],["ぴゃ","ピャ","pya"],["ぴゅ","ピュ","pyu"],["ぴょ","ピョ","pyo"]],"special":[["っ","ッ","促音（双写下一辅音）"],["ー","ー","长音（延长前一拍）"],["ファ","ファ","fa"],["フィ","フィ","fi"],["フェ","フェ","fe"],["フォ","フォ","fo"],["ヴ","ヴ","vu"],["ティ","ティ","ti"],["ディ","ディ","di"],["トゥ","トゥ","tu"],["ドゥ","ドゥ","du"],["ウィ","ウィ","wi"],["ウェ","ウェ","we"],["ウォ","ウォ","wo"],["シェ","シェ","she"],["ジェ","ジェ","je"],["チェ","チェ","che"],["ツァ","ツァ","tsa"]],"days":{"1":"第1天 あ行+か行","2":"第2天 さ行+た行","3":"第3天 な行+は行","4":"第4天 ま/や/ら/わ行+ん","5":"第5天 片假名 ア～ソ","6":"第6天 片假名 タ～ン","7":"第7天 浊音·拗音·总复习"}}</script>
+<script>
+const $=s=>document.querySelector(s);
+const D=JSON.parse($('#wd').textContent);
+let tab='gojuon', quizOn=false, qz={};
+let stats=JSON.parse(localStorage.getItem('gojuon-stats')||'{}');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+/* ---------- 语音 ---------- */
+let jaVoice=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();
+  jaVoice=vs.find(v=>/^ja(-|_)JP/i.test(v.lang))||vs.find(v=>/^ja/i.test(v.lang))||null;
+  $('#hint').textContent=jaVoice?`🔊 发音：${jaVoice.name}`:'⚠ 未检测到日语语音包（Windows 设置→时间和语言→语音→添加「日本語」），发音可能无声，请配合官方音频';}
+if('speechSynthesis' in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function speak(t){if(!('speechSynthesis' in window))return;
+  try{const u=new SpeechSynthesisUtterance(t);u.lang='ja-JP';u.rate=0.7;
+    if(jaVoice)u.voice=jaVoice;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+
+/* ---------- 数据 ---------- */
+function setOf(){if(tab==='gojuon')return D.gojuon.map(x=>({h:x[0],k:x[1],r:x[2],s1:x[3],s2:x[4],day:x[5]}));
+  if(tab==='dakuon')return D.dakuon.map(x=>({h:x[0],k:x[1],r:x[2],day:7}));
+  if(tab==='yoon')return D.yoon.map(x=>({h:x[0],k:x[1],r:x[2],day:7}));
+  return D.special.map(x=>({h:x[0],k:x[1],r:x[2],day:7}));}
+function keyOf(x){return x.h+'|'+x.k;}
+
+function mastery(k){const s=stats[k];if(!s||s.ok+s.bad===0)return 0;
+  return s.ok>=3&&s.ok>=s.bad?2:(s.ok>0?1:0);}
+
+function render(){
+  const daySel=+$('#day').value||0;
+  const set=setOf();
+  $('#grid').innerHTML=set.map(x=>{
+    const m=mastery(keyOf(x));
+    const dim=daySel&&x.day!==daySel&&!(tab==='gojuon'&&daySel===5&&x.k&&daySelKata(x,5))&&!(tab==='gojuon'&&daySel===6&&daySelKata(x,6));
+    const src=(tab==='gojuon'&&x.s1)?`<div class="src"><b>${esc(x.s1)}</b><span class="arw">→</span>${esc(x.h)}<span class="arw">｜</span><b>${esc(x.s2)}</b><span class="arw">→</span>${esc(x.k)}</div>`
+      :(x.day<=4&&tab==='gojuon'?'':'');
+    return `<div class="card${dim?' dim':''}${daySel&&x.day===daySel?' today':''}" data-h="${esc(x.h)}" data-r="${esc(x.r)}">
+      <span class="dot${m===2?' s2':m===1?' s1':''}"></span>
+      <div class="hir">${esc(x.h)}</div><div class="kat">${esc(x.k)}</div>
+      <div class="rom">${esc(x.r)}</div>${src}</div>`;}).join('');
+  const notes={gojuon:'💡 <b>记法</b>：每张卡片下方的「汉字 → 假名」是它的汉字源流（平假名＝汉字草书、片假名＝楷书偏旁），先记源字再记形状，比死记快得多。点卡片听发音（读两遍的效果最好：先看形状再闭眼跟读）。',
+    dakuon:'💡 <b>浊音</b>：在清音 か/さ/た/は 行右上角加两点（゛）变浊音，加小圈（゜）变半浊音（仅は行）。发音要点：が/ざ/だ/ば 声带振动，ぱ 不振动。ぢ/づ 已很少用，一般写作 じ/ず。',
+    yoon:'💡 <b>拗音</b>：い段假名 + 小 ゃ/ゅ/ょ 拼成一拍（如 きゃ=kya）。书写时小假名要写小、靠右下。上海=シャンハイ、中国=チュウゴク——片假名拗音在外来语里极其常用。',
+    special:'💡 <b>促音っ</b>：停顿一拍再发下一个音（かった=kat-ta）。<b>长音ー</b>：把前一拍拖长一拍（コーヒー）。<b>外来语特殊音</b>：为拼外语造的组合（ファ=fa、ティ=ti），片假名词高频使用。'};
+  $('#note').innerHTML=notes[tab];
+}
+function daySelKata(x,d){const rg=D.gojuon;const arr=d===5?rg.slice(0,15):rg.slice(15);
+  return arr.some(y=>y[0]===x.h);}
+
+/* ---------- 发音点击 ---------- */
+$('#grid').addEventListener('click',e=>{
+  const c=e.target.closest('.card');if(!c||quizOn)return;
+  speak(c.dataset.h==='っ'?'あっ':c.dataset.h==='ー'?'あー':c.dataset.h);
+  c.classList.add('playing');setTimeout(()=>c.classList.remove('playing'),420);});
+
+/* ---------- 页签 ---------- */
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('cur'));
+  t.classList.add('cur');tab=t.dataset.t;stopQuiz();render();});
+
+/* ---------- 测验 ---------- */
+let curQ=null,score={ok:0,bad:0};
+function stopQuiz(){quizOn=false;$('#quiz').style.display='none';$('#quiz').innerHTML='';}
+$('#quizb').onclick=()=>{
+  quizOn=!quizOn;$('#quizb').classList.toggle('on',quizOn);
+  if(!quizOn){stopQuiz();return;}
+  score={ok:0,bad:0};nextQ();};
+function nextQ(){
+  const set=setOf().filter(x=>x.h!=='ー'&&x.h!=='っ'||tab==='special');
+  const ans=set[Math.floor(Math.random()*set.length)];
+  const pool=[ans];
+  while(pool.length<4){const c=set[Math.floor(Math.random()*set.length)];
+    if(!pool.some(p=>p.h===c.h&&p.k===c.k))pool.push(c);}
+  pool.sort(()=>Math.random()-.5);
+  curQ=ans;
+  $('#quiz').style.display='';
+  $('#quiz').innerHTML=`<div class="qs">哪个假名读作：</div><div class="big">${esc(ans.r)}</div>
+    <div class="opts">${pool.map(p=>`<div class="opt" data-h="${esc(p.h)}" data-k="${esc(p.k)}">${esc(p.h)}<div style="font-size:15px;color:#8ba0b5">${esc(p.k)}</div></div>`).join('')}</div>
+    <div class="meta">本组正确 <b>${score.ok}</b> · 错误 <b>${score.bad}</b>　（点选项作答，答对读一遍发音）</div>`;
+  $('#quiz').querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+    if(o.dataset.h===curQ.h&&o.dataset.k===curQ.k){
+      o.classList.add('right');score.ok++;
+      const k=keyOf(curQ);stats[k]=stats[k]||{ok:0,bad:0};stats[k].ok++;
+      localStorage.setItem('gojuon-stats',JSON.stringify(stats));
+      speak(curQ.h);setTimeout(nextQ,650);
+    }else{o.classList.add('wrong');score.bad++;
+      const k=keyOf(curQ);stats[k]=stats[k]||{ok:0,bad:0};stats[k].bad++;
+      localStorage.setItem('gojuon-stats',JSON.stringify(stats));
+      const right=[...$('#quiz').querySelectorAll('.opt')].find(p=>p.dataset.h===curQ.h&&p.dataset.k===curQ.k);
+      if(right)right.classList.add('right');
+      setTimeout(nextQ,900);}});
+  render();
+}
+$('#reset').onclick=()=>{if(!confirm('清空全部测验记录（掌握度圆点会归零）？'))return;
+  stats={};localStorage.removeItem('gojuon-stats');render();};
+
+/* ---------- 日程 ---------- */
+const days=D.days;
+for(const k in days){const o=document.createElement('option');o.value=k;o.textContent=days[k];$('#day').appendChild(o);}
+$('#day').onchange=render;
+
+render();
+</script>
+</body>
+</html>
